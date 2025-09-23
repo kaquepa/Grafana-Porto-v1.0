@@ -31,7 +31,7 @@ Thumbs.db
 # Project specific
 grafana_data/
 postgres_data/
-grafana/grafana_api_key.txt
+#grafana/grafana_api_key.txt
 
 # History files
 .history/
