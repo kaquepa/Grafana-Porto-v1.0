@@ -35,7 +35,7 @@ services:
       dockerfile: grafana/dashboards/Dockerfile
     env_file:
       - .env
-    #platform:  linux/arm64
+    platform:  linux/arm64
     container_name: grafana
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
@@ -82,7 +82,7 @@ services:
     container_name: frontend
     env_file:
       - .env
-    #platform:  linux/arm64 #,linux/arm64, amd64
+    platform:  linux/arm64 #,linux/arm64, amd64
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
       GRAFANA_URL: "${GRAFANA_URL}"
@@ -113,7 +113,7 @@ services:
       dockerfile: grafana/Dockerfile
     env_file:
       - .env
-    #platform:  linux/arm64
+    platform:  linux/arm64
     depends_on:
       grafana:
         condition: service_healthy
