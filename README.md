@@ -83,7 +83,6 @@ docker compose up -d --build
 |:------------: |---------------------------|:----: |----------------------------------|
 | 🖥️ **Frontend**   | [http://localhost:8000](http://localhost:8000) | 8000 | Interface web com animações do porto |
 | 📊 **Grafana**    | [http://localhost:3000](http://localhost:3000) | 3000 | Dashboards em tempo real *(login padrão: admin/admin)* |
-| 🗄️ **Adminer**    | [http://localhost:8080](http://localhost:8080) | 8080 | Interface web para o banco de dados |
 | 🐘 **PostgreSQL** | `localhost:5432`                           | 5432 | Banco de dados relacional |
 
 
@@ -107,15 +106,6 @@ Acesse http://localhost:3000 (admin/admin) para:
 . Métricas de eficiência portuária
 . Indicadores de ocupação e produtividade
 ```
-
-## 3. Gestão de Dados
-```bash 
-Acesse http://localhost:8080 para:
-. Verificar estados dos cais diretamente no banco
-. Executar consultas SQL
-. Monitorar a integridade dos dados
-```
-
 ---
 ## 🔌 API Endpoints
 - Estado dos Cais
