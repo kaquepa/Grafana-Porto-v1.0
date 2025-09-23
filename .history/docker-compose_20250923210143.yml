@@ -37,6 +37,8 @@ services:
       - .env
     platform:  linux/amd64
     container_name: grafana
+    port
+  
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
       interval: 30s
@@ -52,8 +54,8 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_AUTH_ANONYMOUS_ENABLED: "false"
       GF_AUTH_BASIC_ENABLED: "true"
-      GF_USERS_DEFAULT_THEME: "dark"
-      GF_SERVER_ROOT_URL: "http://localhost:3000"
+      GF_USERS_DEFAULT_THEME: "light"
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s:%(http_port)s${GRAFANA_URL}"
       GF_DATABASE_TYPE: "postgres"
       GF_DATABASE_HOST: "${POSTGRES_HOST}:5432"
       GF_DATABASE_NAME: "${POSTGRES_DB}"
@@ -122,6 +124,25 @@ services:
     environment:
       PYTHONPATH: /app    
       SIMULATION_MODE: 4
+    
+  adminer:
+    image: adminer:latest
+    ports:
+      - "${ADMINER_PORT}:8080"
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_HOST: "${POSTGRES_HOST}"
+    depends_on:
+       postgres:
+          condition: service_healthy
+    networks:
+      - network
+    restart: unless-stopped
+    
+  
+
 
 volumes:
   postgres_data:

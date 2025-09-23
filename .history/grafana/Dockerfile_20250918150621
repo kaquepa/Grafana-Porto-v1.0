@@ -26,7 +26,7 @@ COPY grafana/create_service_account.py ./grafana/
 COPY grafana/create_dashboard.py ./grafana/
 COPY grafana/grafana_api_key.txt ./grafana/
 
- 
+COPY grafana/port_manager.py ./grafana/
 COPY grafana/database_manager.py ./grafana/
 COPY grafana/streaming.py ./grafana/
 COPY grafana/vessel.py ./grafana/

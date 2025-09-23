@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="grua-container" style="position:relative; margin-bottom: 10px;">
         <svg width="${width}" height="${height}" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto;">
           <text x="200" y="25" text-anchor="middle" font-size="${Math.max(12,16*scale)}" fill="white" font-weight="bold">
-            Grua ${index + 1}
+          Grua ${index + 1}
           </text>
           <!-- Estrutura da grua -->
           <rect x="180" y="50" width="40" height="150" fill="#5D8AA8" rx="2" />

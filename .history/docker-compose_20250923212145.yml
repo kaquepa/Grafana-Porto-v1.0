@@ -123,6 +123,7 @@ services:
       PYTHONPATH: /app    
       SIMULATION_MODE: 4
 
+
 volumes:
   postgres_data:
     driver: local
