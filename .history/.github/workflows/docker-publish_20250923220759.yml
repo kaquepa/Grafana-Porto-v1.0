@@ -1,0 +1,35 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # Checa o repositório
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Configura Docker Hub login
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build e push das imagens
+      - name: Build and push images
+        run: |
+          docker-compose -f docker-compose.yml build
+          # Altere para os nomes corretos das suas imagens no registry
+          docker tag grafana-frontend kaquepa/frontend grafana:latest
+          docker tag frontend frontend_usuario/frontend:latest
+          docker tag postgres frontend_usuario/postgres:latest
+          docker tag grafana-grafana-token-creator frontend_usuario/grafana-token-creator:latest
+          docker push frontend_usuario/grafana:latest
+          docker push frontend_usuario/frontend:latest
+          docker push frontend_usuario/postgres:latest
+          docker push frontend_/grafana-token-creator:latest
