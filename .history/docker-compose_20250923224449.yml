@@ -35,7 +35,7 @@ services:
       dockerfile: grafana/dashboards/Dockerfile
     env_file:
       - .env
-    platform:  linux/arm64
+    platform:  linux/amd64
     container_name: grafana
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
@@ -132,4 +132,4 @@ volumes:
 
 networks:
   network:
-    driver: bridge
+    driver: bri
