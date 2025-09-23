@@ -1,0 +1,183 @@
+/* ======================
+   RESET E CONFIGURAÇÕES GLOBAIS
+   ====================== */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 1rem;
+  background: #f0f8ff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2.5rem); /* Responsivo */
+}
+
+/* ======================
+   CONTAINER PRINCIPAL
+   ====================== */
+.main-container {
+  width: 95%;
+  max-width: 1200px;
+  margin: 0 auto; /* centraliza tudo */
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ======================
+   DASHBOARD GRAFANA
+   ====================== */
+.dashboard-container {
+  width: 100%;
+  height: 60vh;
+  min-height: 400px;
+  border: 2px solid #2c3e50;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  background: white;
+}
+
+.grafana-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ======================
+   CONTAINER DO PORTO
+   ====================== */
+.porto-container {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  padding: 2rem 1rem 4rem;
+  gap: 1rem;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: 40vh;
+  background: linear-gradient(to bottom, #1e90ff, #0077be);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.navio-container {
+  position: relative;
+  margin: 0;
+  flex-shrink: 0;
+  z-index: 2;
+  opacity: 1;
+  transition: opacity 0.6s ease-in-out;
+  min-width: 100px;
+}
+
+.navio-container.oculto {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.controls {
+  text-align: center;
+  margin-bottom: 15px;
+  background: rgba(255,255,255,0.9);
+  padding: 8px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border: 1px solid #ddd;
+  max-width: 300px;
+  margin: 0 auto 15px;
+}
+
+label {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+input[type="checkbox"] {
+  cursor: pointer;
+  transform: scale(1.2);
+}
+
+/* ======================
+   EFEITO ÁGUA E ONDA
+   ====================== */
+.water-effect {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.3)),
+              repeating-linear-gradient(to bottom, transparent, transparent 10px, rgba(255,255,255,0.4) 10px, rgba(255,255,255,0.4) 20px);
+  z-index: 1;
+}
+
+.wave {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 20px;
+  background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" fill="%230077be" opacity=".25"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" fill="%230077be" opacity=".5"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%230077be"/></svg>');
+  background-size: 1200px 100px;
+  animation: wave 12s linear infinite;
+  z-index: 1;
+}
+
+@keyframes wave {
+  0% { background-position-x: 0; }
+  100% { background-position-x: 1200px; }
+}
+
+/* ======================
+   MEDIA QUERIES
+   ====================== */
+
+/* Tablets paisagem */
+@media (max-width: 1024px) {
+  .dashboard-container { height: 55vh; min-height: 350px; }
+  .porto-container { padding: 1.5rem 0.5rem 3rem; min-height: 35vh; gap: 0.8rem; }
+  h1 { margin-bottom: 1.5rem; }
+}
+
+/* Tablets retrato */
+@media (max-width: 768px) {
+  body { padding: 0.5rem; }
+  .dashboard-container { height: 45vh; min-height: 300px; width: 98%; }
+  .porto-container { padding: 1rem 0.3rem 2.5rem; min-height: 30vh; margin: 0.5rem; border-radius: 6px; gap: 0.5rem; }
+  .controls { padding: 6px 10px; margin-bottom: 10px; }
+  .water-effect { height: 40px; }
+  .wave { height: 15px; }
+}
+
+/* Smartphones */
+@media (max-width: 480px) {
+  body { padding: 0.3rem; }
+  h1 { margin-bottom: 1rem; }
+  .dashboard-container { height: 40vh; min-height: 250px; width: 100%; border-radius: 6px; }
+  .porto-container { padding: 0.8rem 0.2rem 2rem; min-height: 25vh; margin: 0.3rem; flex-direction: column; align-items: center; }
+  .controls { padding: 4px 8px; margin-bottom: 8px; max-width: 250px; }
+  .water-effect { height: 30px; }
+  .wave { height: 12px; }
+}
+
+/* Smartphones muito pequenos */
+@media (max-width: 320px) {
+  .dashboard-container { height: 35vh; min-height: 200px; }
+  .porto-container { min-height: 20vh; padding: 0.5rem 0.1rem 1.5rem; }
+  .tab-button { padding: 0.7rem; font-size: 0.8rem; }
+}

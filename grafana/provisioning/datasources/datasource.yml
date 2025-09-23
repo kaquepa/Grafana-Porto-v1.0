@@ -1,0 +1,19 @@
+# Criar arquivo: ./grafana/provisioning/datasources/postgres.yml
+
+apiVersion: 1
+
+datasources:
+  - name: postgres
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: grafana 
+    user: postgres_admin
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500  # PostgreSQL 15
+      timescaledb: false
+    secureJsonData:
+      password: secure_password_123
+    isDefault: true
+    editable: false

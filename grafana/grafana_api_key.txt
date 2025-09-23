@@ -1,0 +1,8 @@
+GRAFANA_API_KEY=glsa_nlgL6aa02vgpSgrssyedJMSUXAru4flc_130abef5
+GRAFANA_TOKEN_NAME=dashboard-token
+SA_NAME=dashboards-service-v2
+GF_FEATURE_TOGGLES_DISABLE_SANITIZE_HTML=true
+GF_DEFAULT_INSTANCE_NAME=grafana-local
+GRAFANA_WAIT_TIMEOUT=600
+ENV_FILE=grafana/grafana_api_key.txt
+GRAFANA_URL=http://grafana:3000

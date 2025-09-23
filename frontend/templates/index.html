@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Portuário</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Dashboard Grafana em cima --> 
+  <iframe
+    src="http://localhost:3000/d/Porto?orgId=1&refresh=10s&theme=dark&kiosk"
+    class="grafana-iframe"
+    style="height: 50vh; width: 100%; border: none;">
+  </iframe>
+
+  <!-- Simulador Portuário abaixo -->
+  <div class="porto-container" id="porto">
+    <div class="water-effect"></div>
+    <div class="wave"></div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
