@@ -599,13 +599,13 @@ class DashboardManager:
         """Cria datasource se não existir"""
         uid = datasource_config["uid"]
         if self.test_database_connection(uid):
-            return uid
-           
+            #return uid
+            pass
         else:
             logger.warning("⚠️ Conexão falhou, executando debug...")
             self.debug_datasource_connection(uid)  # Novo método
-            #pass
-            return uid
+            pass
+            #return uid
         
         try:
             response = self.api.get(f"/datasources/uid/{uid}")
@@ -690,7 +690,7 @@ def execute():
     # Configuração do datasource corrigida
     DATASOURCE_CONFIG = {
         "uid": "postgres-porto-uid",
-        "name": "grafana-postgresql-datasource",
+        "name": "PostgreSQL",
         "type": "postgres",
         "access": "proxy",
         "url": f"{Config_database.HOST}:{Config_database.PORT}",

@@ -1,6 +1,6 @@
 FROM grafana/grafana-oss:latest
 
-# Variáveis fixas
+# Variáveis fixasclea
 ENV  GF_LOG_FILTERS="migrator:error, sqlstore:error,provisioning:error,plugin:error,settings:error"
 
 # Porta padrão

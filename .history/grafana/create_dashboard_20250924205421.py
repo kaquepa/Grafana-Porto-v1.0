@@ -332,10 +332,10 @@ class DashboardManager:
             ds_response = self.api.get(f"/datasources/uid/{datasource_uid}")
             if ds_response.status_code == 200:
                 ds_data = ds_response.json()
-                logger.info(f"📊 Datasource encontrado: {ds_data.get('name')}")
+                logger.info(f"📊 Datasource encontrado: {ds_data.get('name', 'N/A')}")
                 logger.info(f"🔧 URL: {ds_data.get('url')}")
-                logger.info(f"🗄️ Database: {ds_data.get('database')}")
-                logger.info(f"👤 User: {ds_data.get('user')}")
+                logger.info(f"🗄️ Database: {ds_data.get('database', 'N/A')}")
+                logger.info(f"👤 User: {ds_data.get('user', 'N/A')}")
             else:
                 logger.error(f"❌ Datasource não encontrado: {ds_response.status_code}")
                 return
@@ -599,13 +599,13 @@ class DashboardManager:
         """Cria datasource se não existir"""
         uid = datasource_config["uid"]
         if self.test_database_connection(uid):
-            return uid
-           
+            #return uid
+            pass
         else:
             logger.warning("⚠️ Conexão falhou, executando debug...")
             self.debug_datasource_connection(uid)  # Novo método
-            #pass
-            return uid
+            pass
+            #return uid
         
         try:
             response = self.api.get(f"/datasources/uid/{uid}")
@@ -690,7 +690,7 @@ def execute():
     # Configuração do datasource corrigida
     DATASOURCE_CONFIG = {
         "uid": "postgres-porto-uid",
-        "name": "grafana-postgresql-datasource",
+        "name": "PostgreSQL",
         "type": "postgres",
         "access": "proxy",
         "url": f"{Config_database.HOST}:{Config_database.PORT}",

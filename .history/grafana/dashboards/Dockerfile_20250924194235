@@ -1,0 +1,8 @@
+FROM grafana/grafana-oss:latest
+
+# Variáveis fixas
+ENV  \
+    GF_LOG_FILTERS="migrator:error, sqlstore:error,provisioning:error,plugin:error,settings:error"
+
+# Porta padrão
+EXPOSE 3000

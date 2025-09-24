@@ -1,7 +1,7 @@
 apiVersion: 1
 
 datasources:
-  - name: grafana-postgresql-datasource
+  - name: PostgreSQL Porto
     uid: postgres-porto-uid
     type: postgres
     access: proxy
@@ -9,14 +9,19 @@ datasources:
     database: grafana_database
     user: grafana_admin
     secureJsonData:
-      password: "secure_password_123"
+      password: "${POSTGRES_PASSWORD}"
     isDefault: true
     jsonData:
-      sslmode: "disable"
+      sslmode: disable
       postgresVersion: 1200
       maxOpenConns: 100
       maxIdleConns: 100
       maxIdleConnsAuto: true
       connMaxLifetime: 14400
       timescaledb: false
-    editable: true
+    editable: false
+       
+ 
+
+
+

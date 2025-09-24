@@ -84,10 +84,10 @@ services:
    
     volumes:
       - grafana_data:/var/lib/grafana
-      #- ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-      #- ./grafana/provisioning/plugins:/etc/grafana/provisioning/plugins
+      - ./grafana/provisioning/plugins:/etc/grafana/provisioning/plugins
       
     restart: unless-stopped
     ports:
@@ -153,7 +153,6 @@ volumes:
     driver: local
   grafana_data:
     driver: local
-    name: grafana_grafana_data_new
 
 networks:
   network:

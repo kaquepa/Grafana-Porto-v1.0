@@ -6,7 +6,6 @@ echo ""
 # 1. Status dos containers
 echo "📦 === STATUS DOS CONTAINERS ==="
 docker-compose ps
-docker-compose down -v 
 echo ""
 
 # 2. Health checks
@@ -60,13 +59,13 @@ echo ""
 # 10. Verificar configuração do Grafana
 echo "⚙️ === CONFIGURAÇÃO GRAFANA ==="
 echo "Verificando se o datasource está configurado..."
-docker exec grafana_dashboard sh -c "ls -la /etc/grafana/provisioning/datasources/" 2>/dev/null || echo "❌ Diretório de datasources não encontrado"
+docker exec grafana sh -c "ls -la /etc/grafana/provisioning/datasources/" 2>/dev/null || echo "❌ Diretório de datasources não encontrado"
 echo ""
 
 echo "🎯 === RESUMO DO DIAGNÓSTICO ==="
 echo "✅ Containers rodando: $(docker-compose ps | grep -c 'Up')"
 echo "✅ PostgreSQL healthy: $(docker inspect postgres_database --format='{{.State.Health.Status}}' 2>/dev/null || echo 'unknown')"
-echo "✅ Grafana healthy: $(docker inspect grafana_dashboard --format='{{.State.Health.Status}}' 2>/dev/null || echo 'unknown')"
+echo "✅ Grafana healthy: $(docker inspect grafana --format='{{.State.Health.Status}}' 2>/dev/null || echo 'unknown')"
 echo ""
 echo "📝 Próximos passos sugeridos:"
 echo "1. Se algum container não está healthy, reinicie: docker-compose restart [service]"

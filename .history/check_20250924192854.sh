@@ -6,7 +6,6 @@ echo ""
 # 1. Status dos containers
 echo "📦 === STATUS DOS CONTAINERS ==="
 docker-compose ps
-docker-compose down -v 
 echo ""
 
 # 2. Health checks
@@ -42,31 +41,31 @@ echo ""
 # 7. Teste direto de conexão PostgreSQL
 echo "🔌 === TESTE DIRETO POSTGRESQL ==="
 echo "Testando conexão direta ao PostgreSQL..."
-docker exec postgres_database sh -c 'pg_isready -U $POSTGRES_USER -d $POSTGRES_DB' || echo "❌ PostgreSQL não está pronto"
+docker exec postgres sh -c 'pg_isready -U $POSTGRES_USER -d $POSTGRES_DB' || echo "❌ PostgreSQL não está pronto"
 echo ""
 
 # 8. Verificar se há dados nas tabelas
 echo "📊 === VERIFICAR DADOS NAS TABELAS ==="
 echo "Listando tabelas no banco..."
-docker exec postgres_database sh -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -c "\dt"' 2>/dev/null || echo "❌ Não foi possível listar tabelas"
+docker exec postgres sh -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -c "\dt"' 2>/dev/null || echo "❌ Não foi possível listar tabelas"
 echo ""
 
 # 9. Testar query simples
 echo "🔍 === TESTE DE QUERY SIMPLES ==="
 echo "Executando SELECT 1..."
-docker exec postgres_database sh -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT 1 as test;"' 2>/dev/null || echo "❌ Não foi possível executar query"
+docker exec postgres sh -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT 1 as test;"' 2>/dev/null || echo "❌ Não foi possível executar query"
 echo ""
 
 # 10. Verificar configuração do Grafana
 echo "⚙️ === CONFIGURAÇÃO GRAFANA ==="
 echo "Verificando se o datasource está configurado..."
-docker exec grafana_dashboard sh -c "ls -la /etc/grafana/provisioning/datasources/" 2>/dev/null || echo "❌ Diretório de datasources não encontrado"
+docker exec grafana sh -c "ls -la /etc/grafana/provisioning/datasources/" 2>/dev/null || echo "❌ Diretório de datasources não encontrado"
 echo ""
 
 echo "🎯 === RESUMO DO DIAGNÓSTICO ==="
 echo "✅ Containers rodando: $(docker-compose ps | grep -c 'Up')"
 echo "✅ PostgreSQL healthy: $(docker inspect postgres_database --format='{{.State.Health.Status}}' 2>/dev/null || echo 'unknown')"
-echo "✅ Grafana healthy: $(docker inspect grafana_dashboard --format='{{.State.Health.Status}}' 2>/dev/null || echo 'unknown')"
+echo "✅ Grafana healthy: $(docker inspect grafana --format='{{.State.Health.Status}}' 2>/dev/null || echo 'unknown')"
 echo ""
 echo "📝 Próximos passos sugeridos:"
 echo "1. Se algum container não está healthy, reinicie: docker-compose restart [service]"

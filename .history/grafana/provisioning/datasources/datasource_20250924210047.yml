@@ -1,0 +1,15 @@
+apiVersion: 1
+datasources:
+- name: PostgreSQL
+  uid: postgres-porto-uid
+  type: postgres
+  access: proxy
+  url: postgres_database:5432
+  database: grafana_database
+  user: grafana_admin
+  secureJsonData:
+    password: "secure_password_123"   
+ 
+
+
+

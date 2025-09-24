@@ -605,7 +605,7 @@ class DashboardManager:
             logger.warning("⚠️ Conexão falhou, executando debug...")
             self.debug_datasource_connection(uid)  # Novo método
             #pass
-            return uid
+            #return uid
         
         try:
             response = self.api.get(f"/datasources/uid/{uid}")

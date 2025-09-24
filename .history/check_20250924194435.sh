@@ -6,7 +6,7 @@ echo ""
 # 1. Status dos containers
 echo "📦 === STATUS DOS CONTAINERS ==="
 docker-compose ps
-docker-compose down -v 
+docker-compose down -v
 echo ""
 
 # 2. Health checks

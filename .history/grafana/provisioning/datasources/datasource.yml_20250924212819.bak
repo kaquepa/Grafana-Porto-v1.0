@@ -12,11 +12,16 @@ datasources:
       password: "secure_password_123"
     isDefault: true
     jsonData:
-      sslmode: "disable"
+      sslmode: disable
       postgresVersion: 1200
       maxOpenConns: 100
       maxIdleConns: 100
       maxIdleConnsAuto: true
       connMaxLifetime: 14400
       timescaledb: false
-    editable: true
+    editable: false
+       
+ 
+
+
+
