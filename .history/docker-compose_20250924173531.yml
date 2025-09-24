@@ -1,7 +1,7 @@
  
 services:
   postgres_database:
-    container_name: postgres_database
+    container_name: postgres
     build:
       context: .
       dockerfile: postgres/Dockerfile
@@ -30,15 +30,15 @@ services:
       - "${POSTGRES_PORT}:5432"
       
 
-  grafana_dashboard:
+  grafana:
     build:
       context: .
       dockerfile: grafana/dashboards/Dockerfile
-    image: grafana_dashboard
+    image: grafana
     env_file:
       - .env
     #platform:  linux/arm64
-    container_name: grafana_dashboard
+    container_name: grafana
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
       interval: 30s
@@ -80,7 +80,7 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    image: frontend
+    image: grafana-frontend
     container_name: frontend
     env_file:
       - .env
@@ -89,9 +89,9 @@ services:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
       GRAFANA_URL: "${GRAFANA_URL}"
     depends_on:
-      postgres_database:
+      postgres:
         condition: service_healthy
-      grafana_dashboard:
+      grafana:
         condition: service_healthy
     networks:
       - network
@@ -114,7 +114,6 @@ services:
       context: .
       dockerfile: grafana/Dockerfile
     image: grafana-token-creator
-    container_name : grafana-token-creator
     env_file:
       - .env
     #platform:  linux/arm64

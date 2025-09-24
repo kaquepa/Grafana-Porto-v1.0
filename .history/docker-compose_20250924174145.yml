@@ -89,7 +89,7 @@ services:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
       GRAFANA_URL: "${GRAFANA_URL}"
     depends_on:
-      postgres_database:
+      postgres_dat:
         condition: service_healthy
       grafana_dashboard:
         condition: service_healthy

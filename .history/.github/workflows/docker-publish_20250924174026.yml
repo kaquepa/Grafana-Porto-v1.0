@@ -27,7 +27,7 @@ jobs:
           docker compose build
 
           # Frontend
-          docker tag frontend kaquepa/frontend:1.0
+          docker tag grafana-frontend kaquepa/frontend:1.0
           docker push kaquepa/frontend:1.0
 
           # Grafana-token-creator
@@ -36,7 +36,7 @@ jobs:
 
           # Grafana
           docker tag grafana_dashboard kaquepa/grafana_dashboard:custom-1.0
-          docker push kaquepa/grafana_dashboard:custom-1.0
+          docker push kaquepa/grafana:custom-1.0
 
           # Postgres
           docker tag postgres_database kaquepa/postgres_database:custom-1.0
