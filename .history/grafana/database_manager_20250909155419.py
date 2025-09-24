@@ -1,51 +1,46 @@
 import psycopg2
 import time
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values 
 import logging, os
 from pathlib import Path
 from typing import Optional, Union
-from datetime import datetime 
-import urllib.parse
-
+from datetime import time, datetime 
 logger = logging.getLogger(__name__)
 
+BASE_DIR = Path(__file__).resolve().parents[3] 
+
+
 class DatabaseManager:
-    def __init__(self, database_url: Optional[str] = None):
-        # ✅ CORREÇÃO: Use DATABASE_URL ou corrija o host para Docker
-        if database_url:
-            self.database_url = database_url
-        else:
-            # ✅ Fallback para variáveis de ambiente, mas corrija o host
-            env_file = Path(__file__).parent / ".env"
-            load_dotenv(dotenv_path=env_file)
-            
-            # ✅ CORREÇÃO CRÍTICA: No Docker, use 'postgres_database' em vez de 'localhost'
-            host = os.getenv("POSTGRES_HOST", "localhost")
-            # Se estiver no Docker, substitua localhost pelo nome do serviço
-            if host == "localhost" and os.path.exists("/.dockerenv"):
-                host = "postgres_database"
-                
-            self.database_url = f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{host}:{os.getenv('POSTGRES_PORT', 5432)}/{os.getenv('POSTGRES_DB')}"
-        
-        self.connection = None
+    def __init__(self):
+        env_file = Path(env_file or Path(__file__).parent / ".env")
+        load_dotenv(dotenv_path=env_file)
+        self.user: str = os.getenv("POSTGRES_USER")
+        self.password: str = os.getenv("POSTGRES_PASSWORD",)
+        self.dbname: str = os.getenv("POSTGRES_DB")
+        self.host: str = os.getenv("POSTGRES_HOST")
+        self.port: int = int(os.getenv("POSTGRES_PORT", 5432))
     
     def connect(self, retries=5, delay=3) -> bool:
         """Estabelece conexão com retry"""
         for i in range(retries):
             try:
-                # ✅ Use database_url em vez de parâmetros separados
-                self.connection = psycopg2.connect(self.database_url)
-                logger.info(f"✅ Conectado ao banco de dados PostgreSQL")
+                self.connection = psycopg2.connect(
+                    dbname=self.dbname,
+                    user=self.user,
+                    password=self.password,
+                    host=self.host,
+                    port=self.port
+                )
+                logger.info("✅ Conectado ao banco de dados PostgreSQL")
                 return True
             except Exception as e:
                 logger.warning(f"⚠️ Tentativa {i+1}/{retries} falhou: {e}")
-                if i < retries - 1:
-                    time.sleep(delay)
+                time.sleep(delay)
         
-        logger.error(f"❌ Não foi possível conectar ao banco de dados após {retries} tentativas")
+        logger.error("❌ Não foi possível conectar ao banco de dados após várias tentativas")
         self.connection = None
         return False
-
+    
     def is_connected(self) -> bool:
         """Check if database connection is valid"""
         if not self.connection or self.connection.closed:
@@ -67,14 +62,15 @@ class DatabaseManager:
         try:
             cursor = self.connection.cursor()
             
-            # ✅ CORREÇÃO: Aspas faltando na query SQL
+            # Verificar tabelas essenciais
             cursor.execute("""
                 SELECT COUNT(*) FROM information_schema.tables 
-                WHERE table_name IN ('vessels', 'berths', 'operations', 'customs_clearance', 'vessel_queue')
+                WHERE table_name IN ('vessels', 'berths', 'operations', 'customs_clearance', "vessel_queue)
             """)
             table_count = cursor.fetchone()[0]
                
-            if table_count < 5:  # Agora são 5 tabelas
+            
+            if table_count < 4:
                 logger.warning("⚠️ Tabelas do banco não estão completas. Execute o script SQL de inicialização primeiro.")
                 return False
             
@@ -91,10 +87,10 @@ class DatabaseManager:
                     ('Cais 4', 'available', last_updated)
                 ]
                 
-                for berth_number, status, updated in berth_data:
+                for berth_number, status in berth_data:
                     cursor.execute(
-                        "INSERT INTO berths (berth_number, status, last_updated) VALUES (%s, %s, %s)",
-                        (berth_number, status, updated)
+                        "INSERT INTO berths (berth_number, status) VALUES (%s, %s)",
+                        (berth_number, status)
                     )
                 
                 self.connection.commit()

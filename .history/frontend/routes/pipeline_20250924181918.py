@@ -26,15 +26,10 @@ if missing:
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    raise RuntimeError("Variavel de ambiente DATABASE_URL nao configurado")
-
+    raise RuntimeError("Variavel de ambiente")
 # Pool de conexões
 try:
-    conn_pool = pool.SimpleConnectionPool(
-        minconn=1,
-        maxconn=5,
-        dsn = DATABASE_URL)
-    logger.info("✅ Pool de conexões PostgreSQL criado com sucesso!")
+    conn_pool = pool.SimpleConnectionPool(minconn=1, maxconn=5, **DB_CONFIG)
 except Exception as e:
     raise RuntimeError(f"Erro ao criar pool de conexões: {e}")
 

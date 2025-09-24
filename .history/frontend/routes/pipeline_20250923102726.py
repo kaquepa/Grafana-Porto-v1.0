@@ -22,19 +22,17 @@ missing = [e for e in REQUIRED_ENV if not os.getenv(e)]
 if missing:
     raise RuntimeError(f"Variáveis de ambiente faltando: {', '.join(missing)}")
 
-
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("Variavel de ambiente DATABASE_URL nao configurado")
+DB_CONFIG = {
+    "host": os.getenv("POSTGRES_HOST"),
+    "port": os.getenv("POSTGRES_PORT"),
+    "dbname": os.getenv("POSTGRES_DB"),
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
+}
 
 # Pool de conexões
 try:
-    conn_pool = pool.SimpleConnectionPool(
-        minconn=1,
-        maxconn=5,
-        dsn = DATABASE_URL)
-    logger.info("✅ Pool de conexões PostgreSQL criado com sucesso!")
+    conn_pool = pool.SimpleConnectionPool(minconn=1, maxconn=5, **DB_CONFIG)
 except Exception as e:
     raise RuntimeError(f"Erro ao criar pool de conexões: {e}")
 

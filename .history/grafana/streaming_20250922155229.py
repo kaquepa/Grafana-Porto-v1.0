@@ -52,7 +52,7 @@ class PortDataSimulator:
                 dbname="grafana_database",
                 user="grafana_admin", 
                 password="secure_password_123",
-                host="postgres_database",
+                host="postgres",
                 port="5432"
             )
             logger.info("✅ Conectado ao banco de dados PostgreSQL")

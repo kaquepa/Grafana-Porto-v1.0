@@ -21,8 +21,8 @@ class GrafanaConfig:
 
         # Definir variáveis com fallback
         self.URL: str = os.getenv("GRAFANA_URL", "http://grafana_dashboard:3000")
-        self.ADMIN_USER: str = os.getenv("GF_SECURITY_ADMIN_USER")
-        self.ADMIN_PASSWORD: str = os.getenv("GF_SECURITY_ADMIN_PASSWORD")
+        self.ADMIN_USER: str = os.getenv("GF_SECURITY_ADMIN_USER", "admin")
+        self.ADMIN_PASSWORD: str = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
         self.SERVICE_NAME: str = os.getenv("SA_NAME", "dashboards-service-v2")
         self.TOKEN_NAME: str = os.getenv("GRAFANA_TOKEN_NAME", "dashboard-token")
         self.API_KEY: Optional[str] = os.getenv("GRAFANA_API_KEY")
@@ -34,11 +34,11 @@ class DatabaseConfig:
         env_file = Path(env_file or Path(__file__).parent / ".env")
         load_dotenv(dotenv_path=env_file)
 
-        self.USER: str = os.getenv("POSTGRES_USER")
-        self.PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
-        self.DATABASE: str = os.getenv("POSTGRES_DB")
-        self.HOST: str = os.getenv("POSTGRES_HOST")
-        self.PORT: int = int(os.getenv("POSTGRES_PORT"))
+        self.USER: str = os.getenv("POSTGRES_USER", "postgres")
+        self.PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
+        self.DATABASE: str = os.getenv("POSTGRES_DB", "postgres")
+        self.HOST: str = os.getenv("POSTGRES_HOST", "localhost")
+        self.PORT: int = int(os.getenv("POSTGRES_PORT", 5432))
 
     @property
     def connection_string(self) -> str:

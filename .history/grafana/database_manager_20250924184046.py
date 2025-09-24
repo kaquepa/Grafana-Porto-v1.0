@@ -11,40 +11,51 @@ logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     def __init__(self, database_url: Optional[str] = None):
-        # ✅ CORREÇÃO: Use DATABASE_URL ou corrija o host para Docker
+        # ✅ PRIORIDADE: Use DATABASE_URL se for fornecida
         if database_url:
             self.database_url = database_url
         else:
-            # ✅ Fallback para variáveis de ambiente, mas corrija o host
+            # ✅ Fallback: Use variáveis de ambiente, mas corrija o host
             env_file = Path(__file__).parent / ".env"
             load_dotenv(dotenv_path=env_file)
             
-            # ✅ CORREÇÃO CRÍTICA: No Docker, use 'postgres_database' em vez de 'localhost'
+            # ✅ CORREÇÃO: Use 'postgres_database' em vez de 'localhost' no Docker
             host = os.getenv("POSTGRES_HOST", "localhost")
-            # Se estiver no Docker, substitua localhost pelo nome do serviço
-            if host == "localhost" and os.path.exists("/.dockerenv"):
+            # Se estiver rodando no Docker, substitua localhost pelo nome do serviço
+            if host == "localhost" and os.getenv("DOCKER_CONTAINER"):
                 host = "postgres_database"
                 
             self.database_url = f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{host}:{os.getenv('POSTGRES_PORT', 5432)}/{os.getenv('POSTGRES_DB')}"
-        
-        self.connection = None
     
     def connect(self, retries=5, delay=3) -> bool:
         """Estabelece conexão com retry"""
         for i in range(retries):
             try:
-                # ✅ Use database_url em vez de parâmetros separados
+                # ✅ Use a database_url corrigida
                 self.connection = psycopg2.connect(self.database_url)
-                logger.info(f"✅ Conectado ao banco de dados PostgreSQL")
+                logger.info(f"✅ Conectado ao banco de dados PostgreSQL: {self._mask_password(self.database_url)}")
                 return True
             except Exception as e:
                 logger.warning(f"⚠️ Tentativa {i+1}/{retries} falhou: {e}")
-                if i < retries - 1:
+                if i < retries - 1:  # Não esperar após a última tentativa
                     time.sleep(delay)
         
         logger.error(f"❌ Não foi possível conectar ao banco de dados após {retries} tentativas")
         self.connection = None
         return False
+
+    def _mask_password(self, url: str) -> str:
+        """Mascara a senha na URL para logging seguro"""
+        parsed = urllib.parse.urlparse(url)
+        if parsed.password:
+            # Substitui a senha por ***
+            safe_netloc = parsed.hostname
+            if parsed.port:
+                safe_netloc += f":{parsed.port}"
+            if parsed.username:
+                safe_netloc = f"{parsed.username}:***@{safe_netloc}"
+            return urllib.parse.urlunparse(parsed._replace(netloc=safe_netloc))
+        return url
 
     def is_connected(self) -> bool:
         """Check if database connection is valid"""
@@ -67,7 +78,7 @@ class DatabaseManager:
         try:
             cursor = self.connection.cursor()
             
-            # ✅ CORREÇÃO: Aspas faltando na query SQL
+            # ✅ CORREÇÃO: Sintaxe SQL corrigida
             cursor.execute("""
                 SELECT COUNT(*) FROM information_schema.tables 
                 WHERE table_name IN ('vessels', 'berths', 'operations', 'customs_clearance', 'vessel_queue')
@@ -133,4 +144,3 @@ class DatabaseManager:
         if self.connection and not self.connection.closed:
             self.connection.close()
             logger.info("✅ Conexão com o banco de dados fechada")
-            self.connection = None

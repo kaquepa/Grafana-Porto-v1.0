@@ -33,8 +33,7 @@ try:
     conn_pool = pool.SimpleConnectionPool(
         minconn=1,
         maxconn=5,
-        dsn = DATABASE_URL)
-    logger.info("✅ Pool de conexões PostgreSQL criado com sucesso!")
+        dsn = DAT)
 except Exception as e:
     raise RuntimeError(f"Erro ao criar pool de conexões: {e}")
 

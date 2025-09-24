@@ -86,7 +86,7 @@ services:
     #platform:  linux/arm64 #,linux/arm64, amd64
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_database:5432/${POSTGRES_DB}"
-      GRAFANA_URL: "http://grafana_dashboard:3000"
+      GRAFANA_URL: 
     depends_on:
       postgres_database:
         condition: service_healthy

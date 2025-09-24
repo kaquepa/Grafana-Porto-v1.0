@@ -57,7 +57,7 @@ services:
       GF_USERS_DEFAULT_THEME: "dark"
       GF_SERVER_ROOT_URL: "http://localhost:3000"
       GF_DATABASE_TYPE: "${GF_DATABASE_TYPE}"
-      GF_DATABASE_HOST: "postgres_database:5432"
+      GF_DATABASE_HOST: "${POSTGRES_HOST}:5432"
       GF_DATABASE_NAME: "${POSTGRES_DB}"
       GF_DATABASE_USER: "${POSTGRES_USER}"
       GF_DATABASE_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -68,7 +68,8 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/provisioning/plugins:/etc/grafana/provisioning/plugins
-      
+      - ./grafana/provisioning/alerting:/etc/grafana/provisioning/alerting
+
     restart: unless-stopped
     ports:
       - "${GRAFANA_PORT}:3000"
@@ -85,8 +86,8 @@ services:
       - .env
     #platform:  linux/arm64 #,linux/arm64, amd64
     environment:
-      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_database:5432/${POSTGRES_DB}"
-      GRAFANA_URL: "http://grafana_dashboard:3000"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}"
+      GRAFANA_URL: "${GRAFANA_URL}"
     depends_on:
       postgres_database:
         condition: service_healthy
@@ -99,7 +100,7 @@ services:
       - ./frontend:/app
       #- ./grafana/grafana_api_key.txt:/app/grafana/grafana_api_key.txt:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: ["CMD", "curl", "-f", "http://frontend:8001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -126,7 +127,6 @@ services:
     environment:
       PYTHONPATH: /app    
       SIMULATION_MODE: 4
-      GRAFANA_URL: "http://grafana_dashboard:3000"
 
 volumes:
   postgres_data:

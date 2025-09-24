@@ -37,8 +37,8 @@ class DatabaseConfig:
         self.USER: str = os.getenv("POSTGRES_USER")
         self.PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
         self.DATABASE: str = os.getenv("POSTGRES_DB")
-        self.HOST: str = os.getenv("POSTGRES_HOST")
-        self.PORT: int = int(os.getenv("POSTGRES_PORT"))
+        self.HOST: str = os.getenv("POSTGRES_HOST", "localhost")
+        self.PORT: int = int(os.getenv("POSTGRES_PORT", 5432))
 
     @property
     def connection_string(self) -> str:

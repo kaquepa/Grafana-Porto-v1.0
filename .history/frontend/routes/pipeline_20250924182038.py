@@ -34,7 +34,7 @@ try:
         minconn=1,
         maxconn=5,
         dsn = DATABASE_URL)
-    logger.info("✅ Pool de conexões PostgreSQL criado com sucesso!")
+    logger.info()
 except Exception as e:
     raise RuntimeError(f"Erro ao criar pool de conexões: {e}")
 
