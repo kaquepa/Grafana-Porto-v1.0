@@ -305,7 +305,7 @@ class DashboardManager:
             return False
         
 
-    def test_datasource_health(self, datasource_uid: str) -> bool:
+        def test_datasource_health(self, datasource_uid: str) -> bool:
         """Testa a saúde do datasource via endpoint específico"""
         try:
             # Primeiro tenta o endpoint de health do datasource
@@ -323,64 +323,7 @@ class DashboardManager:
             logger.error(f"❌ Erro no health check: {e}")
             return False
         
-    def debug_datasource_connection(self, datasource_uid: str):
-        """Método para debug completo da conexão"""
-        logger.info(f"🔍 Debugando conexão do datasource {datasource_uid}")
-        
-        try:
-            # 1. Verificar se o datasource existe
-            ds_response = self.api.get(f"/datasources/uid/{datasource_uid}")
-            if ds_response.status_code == 200:
-                ds_data = ds_response.json()
-                logger.info(f"📊 Datasource encontrado: {ds_data.get('name', 'N/A')}")
-                logger.info(f"🔧 URL: {ds_data.get('url')}")
-                logger.info(f"🗄️ Database: {ds_data.get('database', 'N/A')}")
-                logger.info(f"👤 User: {ds_data.get('user', 'N/A')}")
-            else:
-                logger.error(f"❌ Datasource não encontrado: {ds_response.status_code}")
-                return
-                
-            # 2. Testar health check
-            logger.info("🏥 Testando health check...")
-            self.test_datasource_health(datasource_uid)
-            
-            # 3. Testar query simples
-            logger.info("🔍 Testando query simples...")
-            self.test_database_connection(datasource_uid)
-            
-            # 4. Testar query mais específica se você souber as tabelas
-            logger.info("📋 Testando query de tabelas...")
-            self.test_table_query(datasource_uid)
-            
-        except Exception as e:
-            logger.error(f"❌ Erro no debug: {e}")
 
-    def test_table_query(self, datasource_uid: str):
-        """Testa uma query nas tabelas específicas do seu sistema"""
-        # Substitua por uma tabela que você sabe que existe
-        test_query = "SELECT COUNT(*) as total FROM information_schema.tables WHERE table_schema = 'public'"
-        
-        try:
-            response = self.api.post("/ds/query", json={
-                "queries": [{
-                    "refId": "A", 
-                    "datasource": {"uid": datasource_uid},
-                    "rawSql": test_query,
-                    "format": "table"
-                }]
-            })
-            
-            if response.status_code == 200:
-                result = response.json()
-                logger.info(f"📊 Query de tabelas executada com sucesso: {result}")
-                return True
-            else:
-                logger.error(f"❌ Falha na query de tabelas: {response.status_code} - {response.text}")
-                return False
-                
-        except Exception as e:
-            logger.error(f"❌ Erro na query de tabelas: {e}")
-            return False
 
 
     @lru_cache(maxsize=32)
@@ -598,14 +541,6 @@ class DashboardManager:
     def create_datasource_if_not_exists(self, datasource_config: Dict[str, Any]) -> str:
         """Cria datasource se não existir"""
         uid = datasource_config["uid"]
-        if self.test_database_connection(uid):
-            #return uid
-            pass
-        else:
-            logger.warning("⚠️ Conexão falhou, executando debug...")
-            self.debug_datasource_connection(uid)  # Novo método
-            pass
-            #return uid
         
         try:
             response = self.api.get(f"/datasources/uid/{uid}")
@@ -677,7 +612,7 @@ class DashboardManager:
 def execute():
     """Função principal"""
     
-    logger.info("🚀 Iniciando configuração do Dashboard ...")
+    logger.info("🚀 Iniciando configuração do Dashboard do Porto...")
     
     # Verificar banco de dados primeiro
     logger.info("🔍 Verificando configuração do banco de dados...")    
@@ -690,7 +625,7 @@ def execute():
     # Configuração do datasource corrigida
     DATASOURCE_CONFIG = {
         "uid": "postgres-porto-uid",
-        "name": "PostgreSQL",
+        "name": "PostgreSQL Porto",
         "type": "postgres",
         "access": "proxy",
         "url": f"{Config_database.HOST}:{Config_database.PORT}",

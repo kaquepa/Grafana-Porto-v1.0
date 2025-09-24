@@ -734,7 +734,7 @@ def execute():
         # Configurar dashboard
         dashboard_config = DashboardConfig(
             title="Dashboard Operacional do Porto",
-            uid="Porto",
+            uid="postgres-porto-uid",
             time_from="now-7d",
             refresh="10s"
         )

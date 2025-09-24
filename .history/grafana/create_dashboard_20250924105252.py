@@ -333,7 +333,7 @@ class DashboardManager:
             if ds_response.status_code == 200:
                 ds_data = ds_response.json()
                 logger.info(f"📊 Datasource encontrado: {ds_data.get('name', 'N/A')}")
-                logger.info(f"🔧 URL: {ds_data.get('url')}")
+                logger.info(f"🔧 URL: {ds_data.get('url', 'N/A')}")
                 logger.info(f"🗄️ Database: {ds_data.get('database', 'N/A')}")
                 logger.info(f"👤 User: {ds_data.get('user', 'N/A')}")
             else:
@@ -596,6 +596,10 @@ class DashboardManager:
             raise
     
     def create_datasource_if_not_exists(self, datasource_config: Dict[str, Any]) -> str:
+        
+        
+        
+        
         """Cria datasource se não existir"""
         uid = datasource_config["uid"]
         if self.test_database_connection(uid):
@@ -677,7 +681,7 @@ class DashboardManager:
 def execute():
     """Função principal"""
     
-    logger.info("🚀 Iniciando configuração do Dashboard ...")
+    logger.info("🚀 Iniciando configuração do Dashboard do Porto...")
     
     # Verificar banco de dados primeiro
     logger.info("🔍 Verificando configuração do banco de dados...")    
@@ -690,7 +694,7 @@ def execute():
     # Configuração do datasource corrigida
     DATASOURCE_CONFIG = {
         "uid": "postgres-porto-uid",
-        "name": "PostgreSQL",
+        "name": "PostgreSQL Porto",
         "type": "postgres",
         "access": "proxy",
         "url": f"{Config_database.HOST}:{Config_database.PORT}",

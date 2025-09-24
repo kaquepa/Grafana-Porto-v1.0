@@ -17,10 +17,18 @@ ENV GF_ANALYTICS_REPORTING_ENABLED=false \
     GF_AUTH_ANONYMOUS_ROLE=Viewer \
     GF_FEATURE_TOGGLES_ENABLE=publicDashboards \
     GF_DATABASE_TYPE=postgres \
-    GF_DATABASE_SSL_MODE=disable \
-    GF_LOG_LEVEL=error \
-    GF_LOG_MODE=console \
-    GF_LOG_FILTERS="migrator:error,sqlstore:error,provisioning:error,plugin:error,settings:error"
+    GF_DATABASE_SSL_MODE=disable
+     # Logging minimalista
+      GF_LOG_LEVEL: error
+      GF_LOG_MODE: console
+
+      # Desabilitar logs de inicialização
+      GF_LOG_FILTERS: >-
+        migrator:error,
+        sqlstore:error,
+        provisioning:error,
+        plugin:error,
+        settings:error
 
 # Porta padrão
 EXPOSE 3000

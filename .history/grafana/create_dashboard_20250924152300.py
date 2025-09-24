@@ -690,7 +690,7 @@ def execute():
     # Configuração do datasource corrigida
     DATASOURCE_CONFIG = {
         "uid": "postgres-porto-uid",
-        "name": "PostgreSQL",
+        "name": "PostgreSQL Porto",
         "type": "postgres",
         "access": "proxy",
         "url": f"{Config_database.HOST}:{Config_database.PORT}",
@@ -734,7 +734,7 @@ def execute():
         # Configurar dashboard
         dashboard_config = DashboardConfig(
             title="Dashboard Operacional do Porto",
-            uid="Porto",
+            uid="postgres-porto-uid",
             time_from="now-7d",
             refresh="10s"
         )

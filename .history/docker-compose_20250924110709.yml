@@ -61,6 +61,7 @@ services:
       GF_DATABASE_NAME: "${POSTGRES_DB}"
       GF_DATABASE_USER: "${POSTGRES_USER}"
       GF_DATABASE_PASSWORD: "${POSTGRES_PASSWORD}"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-clock-panel,grafana-simple-json-datasource"
    
     volumes:
       - grafana_data:/var/lib/grafana

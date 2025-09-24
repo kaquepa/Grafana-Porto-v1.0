@@ -1,6 +1,6 @@
 apiVersion: 1
 datasources:
-- name: PostgreSQL
+- name: PostgreSQL Porto
   uid: postgres-porto-uid
   type: postgres
   access: proxy

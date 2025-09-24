@@ -56,11 +56,12 @@ services:
       GF_AUTH_BASIC_ENABLED: "true"
       GF_USERS_DEFAULT_THEME: "dark"
       GF_SERVER_ROOT_URL: "http://localhost:3000"
-      GF_DATABASE_TYPE: "${GF_DATABASE_TYPE}"
+      GF_DATABASE_TYPE: "postgres"
       GF_DATABASE_HOST: "${POSTGRES_HOST}:5432"
       GF_DATABASE_NAME: "${POSTGRES_DB}"
       GF_DATABASE_USER: "${POSTGRES_USER}"
       GF_DATABASE_PASSWORD: "${POSTGRES_PASSWORD}"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-clock-panel,grafana-simple-json-datasource"
    
     volumes:
       - grafana_data:/var/lib/grafana
@@ -138,3 +139,5 @@ networks:
     driver: bridge
 
 
+
+you do not have cuurrently have a default database source 

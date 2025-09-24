@@ -1,0 +1,16 @@
+apiVersion: 1
+datasources:
+  - name: PostgreSQL Porto
+    uid: postgres-porto-uid
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: grafana_database  # Em vez de ${POSTGRES_DB}
+    user: grafana_admin         
+      password: secure_password_123  # Em vez de ${POSTGRES_PASSWORD}
+    isDefault: true
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500
+      timescaledb: false
+    editable: false
