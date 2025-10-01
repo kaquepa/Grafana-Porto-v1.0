@@ -37,7 +37,7 @@ services:
     image: grafana_dashboard
     env_file:
       - .env
-    #platform:  linux/arm64
+    platform:  linux/arm64
     container_name: grafana_dashboard
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
