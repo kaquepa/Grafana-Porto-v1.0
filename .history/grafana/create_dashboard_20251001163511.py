@@ -239,30 +239,38 @@ class DashboardManager:
         """Retorna queries do sistema - CHAVES ALINHADAS COM TÍTULOS"""
         return {
             # Títulos EXATOS dos painéis criados
-            
-
             "Eficiência Operacional": """
-                 SELECT
-                    DATE_TRUNC('minute', start_time) + 
-                    INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3) as time,
+                WITH time_buckets AS (
+                    SELECT 
+                        generate_series(
+                            date_trunc('minute', $__timeFrom()),
+                            date_trunc('minute', $__timeTo()),
+                            interval '3 minute'
+                        ) as time
+                )
+                SELECT
+                    tb.time,
                     'Eficiência' as metric,
-                    ROUND(
-                        AVG(
+                    COALESCE(
+                        ROUND(AVG(
                             CASE 
-                                WHEN planned_duration > 0 THEN 
-                                    LEAST(100.0, (planned_duration::float / NULLIF(actual_duration, 0)) * 100)
+                                WHEN o.planned_duration > 0 THEN 
+                                    LEAST(100.0, (o.planned_duration::float / NULLIF(o.actual_duration, 0)) * 100)
                                 ELSE NULL 
                             END
-                        )::numeric, 1
-                    ) as value
-                FROM operations
-                WHERE start_time >= $__timeFrom() 
-                AND start_time <= $__timeTo()
-                AND status = 'completed'
-                GROUP BY DATE_TRUNC('minute', start_time) + 
-                        INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3)
+                        )::numeric, 1),
+                    0) as value
+                FROM time_buckets tb
+                LEFT JOIN operations o
+                    ON DATE_TRUNC('minute', o.start_time) 
+                    + INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM o.start_time)::int / 3) = tb.time
+                AND o.status = 'completed'
+                AND o.start_time >= $__timeFrom() 
+                AND o.start_time <= $__timeTo()
+                GROUP BY tb.time
+                ORDER BY tb.time;
+
             """,
-            
             
             "Navios atendidos": """ 
                 SELECT COUNT(*)  as " " -- total_vessels

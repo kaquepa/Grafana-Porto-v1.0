@@ -263,6 +263,7 @@ class DashboardManager:
                         INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3)
             """,
             
+            ,
             
             "Navios atendidos": """ 
                 SELECT COUNT(*)  as " " -- total_vessels

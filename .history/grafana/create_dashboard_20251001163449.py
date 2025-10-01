@@ -239,8 +239,9 @@ class DashboardManager:
         """Retorna queries do sistema - CHAVES ALINHADAS COM TÍTULOS"""
         return {
             # Títulos EXATOS dos painéis criados
-            
 
+
+            
             "Eficiência Operacional": """
                  SELECT
                     DATE_TRUNC('minute', start_time) + 
@@ -262,7 +263,6 @@ class DashboardManager:
                 GROUP BY DATE_TRUNC('minute', start_time) + 
                         INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3)
             """,
-            
             
             "Navios atendidos": """ 
                 SELECT COUNT(*)  as " " -- total_vessels

@@ -53,7 +53,7 @@ class DashboardConfig:
     refresh: str = "30s"
 
 class GrafanaAPI:
-    """Cliente API do Grafana com session reutilizável"""
+    """Cliente API do Grafana simples"""
     
     def __init__(self, base_url: str, api_key: str, timeout: int = 30):
         self.base_url = base_url.rstrip('/')
@@ -72,8 +72,6 @@ class GrafanaAPI:
             return response
         except requests.RequestException as e:
             logger.error(f"Erro {method} {endpoint}: {e}")
-            if hasattr(e, 'response') and e.response:
-                logger.error(f"Response: {e.response.text}")
             raise
     
     def get(self, endpoint: str, **kwargs) -> requests.Response:
@@ -81,9 +79,15 @@ class GrafanaAPI:
     
     def post(self, endpoint: str, **kwargs) -> requests.Response:
         return self._request("POST", endpoint, **kwargs)
+    
+    def delete(self, endpoint: str, **kwargs) -> requests.Response:
+        return self._request("DELETE", endpoint, **kwargs)
+    
+    def put(self, endpoint: str, **kwargs) -> requests.Response:
+        return self._request("PUT", endpoint, **kwargs)
 
 class PanelFactory:
-    """Factory para criação de painéis"""
+    """Factory para criação de painéis SIMPLES"""
     
     @staticmethod
     def _base_panel(panel_type: str, config: PanelConfig, query: str, ds_uid: str) -> Dict[str, Any]:
@@ -92,6 +96,7 @@ class PanelFactory:
             "title": config.title,
             "description": config.description,
             "gridPos": {"x": config.x_pos, "y": config.y_pos, "w": config.width, "h": config.height},
+            "datasource": {"type": "postgres", "uid": ds_uid},
             "targets": [{
                 "datasource": {"type": "postgres", "uid": ds_uid},
                 "refId": "A",
@@ -136,7 +141,7 @@ class PanelFactory:
         return panel
 
 class LayoutManager:
-    """Gerenciador de layout - define posições dos painéis"""
+    """Gerenciador de layout simples"""
     
     LAYOUTS = [
         {"title": "Eficiência Operacional", "type": "stat", "w": 3, "h": 6, "x": 0, "y": 0},
@@ -159,14 +164,11 @@ class LayoutManager:
             
             if layout:
                 panel["gridPos"] = {"x": layout["x"], "y": layout["y"], "w": layout["w"], "h": layout["h"]}
-            else:
-                logger.warning(f"Layout não encontrado para: {key}")
-                panel["gridPos"] = {"x": 0, "y": 100, "w": 12, "h": 8}
         
         return panels
 
 class DashboardManager:
-    """Gerenciador principal de dashboards"""
+    """Gerenciador SIMPLES de dashboards"""
     
     THRESHOLDS = {
         "efficiency": [
@@ -188,115 +190,142 @@ class DashboardManager:
     
     def __init__(self, api: GrafanaAPI):
         self.api = api
-    
-    def wait_for_provisioned_datasource(self, uid: str, max_retries: int = 15, delay: int = 3) -> str:
-        """
-        Aguarda o datasource provisionado estar disponível e funcional.
-        O datasource é configurado via ./grafana/provisioning/datasources/datasource.yml
-        """
-        logger.info(f"Aguardando datasource provisionado '{uid}'...")
-        
-        for attempt in range(1, max_retries + 1):
-            try:
-                # Tenta buscar o datasource
-                response = self.api.get(f"/datasources/uid/{uid}")
-                
-                if response.status_code == 200:
-                    ds_data = response.json()
-                    logger.info(f"Datasource '{uid}' encontrado (tentativa {attempt}/{max_retries})")
-                    
-                    # Aguarda um pouco para garantir que está totalmente carregado
-                    time.sleep(2)
-                    
-                    # Testa se está funcional
-                    if self._test_datasource_query(uid):
-                        logger.info(f"Datasource '{uid}' está funcional")
-                        return uid
-                    else:
-                        logger.warning(f"Datasource encontrado mas ainda não está funcional (tentativa {attempt}/{max_retries})")
-                
-            except requests.HTTPError as e:
-                if e.response.status_code == 404:
-                    logger.warning(f"Datasource ainda não provisionado (tentativa {attempt}/{max_retries})")
-                else:
-                    logger.error(f"Erro ao buscar datasource: {e}")
-            
-            except Exception as e:
-                logger.warning(f"Erro na tentativa {attempt}: {e}")
-            
-            # Aguarda antes da próxima tentativa
-            if attempt < max_retries:
-                time.sleep(delay)
-        
-        raise RuntimeError(
-            f"Datasource '{uid}' não ficou disponível após {max_retries} tentativas.\n"
-            f"Verifique se o arquivo ./grafana/provisioning/datasources/datasource.yml está correto."
-        )
-    
-    def _test_datasource_query(self, ds_uid: str) -> bool:
-        """Testa datasource com query SQL real"""
-        try:
-            payload = {
-                "queries": [{
-                    "refId": "A",
-                    "datasource": {"type": "postgres", "uid": ds_uid},
-                    "rawSql": "SELECT 1 as test, NOW() as timestamp",
-                    "format": "table"
-                }],
-                "from": "now-5m",
-                "to": "now"
+
+    def create_datasource(self, uid: str) -> str:
+        """Método SIMPLES para criar datasource"""
+        datasource_config = {
+            "name": "PostgreSQL-Porto-Operacional",
+            "type": "postgres", 
+            "uid": uid,
+            "access": "proxy",
+            "url": f"{Config_database.HOST}:{Config_database.PORT}",
+            "database": Config_database.DATABASE,
+            "user": Config_database.USER,
+            "isDefault": True,
+            "secureJsonData": {
+                "password": Config_database.PASSWORD
+            },
+            "jsonData": {
+                "sslmode": "disable",
+                "postgresVersion": 1500
             }
+        }
+        
+        try:
+            # Remove existente se houver
+            try:
+                self.api.delete(f"/datasources/uid/{uid}")
+                time.sleep(1)
+            except:
+                pass
             
-            response = self.api.post("/ds/query", json=payload)
-            result = response.json()
+            # Cria novo
+            response = self.api.post("/datasources", json=datasource_config)
             
-            if "results" in result:
-                frames = result.get("results", {}).get("A", {}).get("frames", [])
-                if frames and len(frames) > 0:
-                    return True
-            
-            return False
-            
-        except Exception:
-            return False
-    
+            if response.status_code in [200, 201]:
+                logger.info("✅ Datasource criado")
+                time.sleep(3)
+                return uid
+            else:
+                logger.error(f"❌ Erro: {response.text}")
+                return uid
+                
+        except Exception as e:
+            logger.error(f"💥 Erro: {e}")
+            return uid
+
     @lru_cache(maxsize=1)
     def get_queries(self) -> Dict[str, str]:
-        """Queries SQL - cached para evitar recriação"""
+        """Retorna queries do sistema - CHAVES ALINHADAS COM TÍTULOS"""
         return {
+            # Títulos EXATOS dos painéis criados
             "Eficiência Operacional": """
-                SELECT
-                    DATE_TRUNC('minute', start_time) + INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3) as time,
-                    ROUND(AVG(CASE WHEN planned_duration > 0 THEN LEAST(100.0, (planned_duration::float / NULLIF(actual_duration, 0)) * 100) ELSE NULL END)::numeric, 1) as value
+                 SELECT
+                    DATE_TRUNC('minute', start_time) + 
+                    INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3) as time,
+                    'Eficiência' as metric,
+                    ROUND(
+                        AVG(
+                            CASE 
+                                WHEN planned_duration > 0 THEN 
+                                    LEAST(100.0, (planned_duration::float / NULLIF(actual_duration, 0)) * 100)
+                                ELSE NULL 
+                            END
+                        )::numeric, 1
+                    ) as value
                 FROM operations
-                WHERE start_time >= $__timeFrom() AND start_time <= $__timeTo() AND status = 'completed'
-                GROUP BY 1
+                WHERE start_time >= $__timeFrom() 
+                AND start_time <= $__timeTo()
+                AND status = 'completed'
+                GROUP BY DATE_TRUNC('minute', start_time) + 
+                        INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3)
             """,
-            "Navios atendidos": "SELECT COUNT(*) as \" \" FROM operations WHERE status = 'completed'",
-            "Navios à Espera": "SELECT COUNT(*) as \" \" FROM vessel_queue WHERE status = 'waiting'",
-            "Cais Ocupados": "SELECT COUNT(*) as \" \" FROM berths WHERE status = 'occupied'",
+            
+            "Navios atendidos": """ 
+                SELECT COUNT(*)  as " " -- total_vessels
+                FROM operations 
+                WHERE status = 'completed'
+            """,
+            
+
+
+            "Navios à Espera": """
+                SELECT COUNT(*) as " " -- waiting_vessels
+                    FROM vessel_queue vq
+                    WHERE vq.status = 'waiting'
+            """,
+            
+        
+            
+            "Cais Ocupados": """
+                SELECT count(*)   as " " -- occupied_berths
+                FROM berths
+                WHERE status = 'occupied'
+            """,
+            
+            
             "Percentagem de ocupação dos Cais": """
-                SELECT ROUND((COUNT(CASE WHEN status = 'occupied' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)), 2) as \" \"
+                SELECT
+                    ROUND(
+                        (COUNT(CASE WHEN status = 'occupied' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)), 2
+                    )  as " " -- occupation_rate
                 FROM berths
             """,
+            
+            
             "Tempo de espera na fila": """
-                SELECT
-                    TO_CHAR(CAST(COALESCE(MIN(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS min_wait_time,
-                    TO_CHAR(CAST(COALESCE(AVG(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS avg_wait_time,
-                    TO_CHAR(CAST(COALESCE(MAX(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS max_wait_time
-                FROM vessel_queue
-                WHERE status = 'completed' AND start_service_time IS NOT NULL AND arrival_time IS NOT NULL AND start_service_time >= arrival_time
-            """,
+                        SELECT
+                                TO_CHAR(CAST(COALESCE(MIN(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS min_wait_time,
+                                TO_CHAR(CAST(COALESCE(AVG(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS avg_wait_time,
+                                TO_CHAR(CAST(COALESCE(MAX(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS max_wait_time
+                            FROM vessel_queue
+                            WHERE status = 'completed'
+                                AND start_service_time IS NOT NULL
+                                AND arrival_time IS NOT NULL
+                                AND start_service_time >= arrival_time;
+
+                """,
+            
+            
+            
             "Estado na Alfandega": """
-                SELECT v.vessel_name, c.status, TO_CHAR(c.last_update, 'YYYY-MM-DD HH24:MI:SS') AS last_update
-                FROM customs_clearance c
+                SELECT
+                    v.vessel_name,
+                    c.status,
+                    TO_CHAR(c.last_update, 'YYYY-MM-DD HH24:MI:SS') AS last_update
+                FROM customs_clearance as c
                 JOIN vessels v ON c.vessel_id = v.vessel_id
-                ORDER BY c.last_update DESC LIMIT 50
+                ORDER BY c.last_update DESC
+                LIMIT 50
             """,
+            
             "Cronograma dos Cais": """
-                SELECT b.berth_number AS berth_name, v.vessel_name,
+                SELECT
+                    b.berth_number AS berth_name,
+                    v.vessel_name,
                     TO_CHAR(o.start_time, 'YYYY-MM-DD HH24:MI:SS') AS arrival_time,
-                    TO_CHAR(o.end_time, 'YYYY-MM-DD HH24:MI:SS') AS departure_time, o.status
+                    TO_CHAR(o.end_time, 'YYYY-MM-DD HH24:MI:SS') AS departure_time,
+                    o.status
                 FROM operations o
                 JOIN berths b ON o.berth_id = b.berth_id
                 JOIN vessels v ON o.vessel_id = v.vessel_id
@@ -306,7 +335,7 @@ class DashboardManager:
         }
     
     def create_panels(self, ds_uid: str) -> List[Dict[str, Any]]:
-        """Cria todos os painéis do dashboard"""
+        """Cria painéis"""
         queries = self.get_queries()
         panels = []
         
@@ -316,7 +345,7 @@ class DashboardManager:
             ("Navios à Espera", "stat", {}, "waiting"),
             ("Cais Ocupados", "stat", {}, "occupation"),
             ("Percentagem de ocupação dos Cais", "stat", {"unit": "percent", "max_val": 100}, "occupation"),
-            ("Tempo de espera na fila", "table", {"unit": "s"}, None),
+            ("Tempo de espera na fila", "table", {}, None),
             ("Estado na Alfandega", "table", {}, None),
             ("Cronograma dos Cais", "table", {}, None)
         ]
@@ -325,7 +354,8 @@ class DashboardManager:
             config = PanelConfig(title=title, **extra_config)
             
             if ptype == "stat":
-                panels.append(PanelFactory.stat_panel(config, queries[title], ds_uid, self.THRESHOLDS[threshold_key]))
+                thresholds = self.THRESHOLDS.get(threshold_key, [])
+                panels.append(PanelFactory.stat_panel(config, queries[title], ds_uid, thresholds))
             else:
                 panels.append(PanelFactory.table_panel(config, queries[title], ds_uid))
         
@@ -333,7 +363,7 @@ class DashboardManager:
         return panels
     
     def create_dashboard(self, config: DashboardConfig, panels: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Cria ou atualiza dashboard"""
+        """Cria dashboard"""
         panels = LayoutManager.apply(panels)
         
         payload = {
@@ -345,51 +375,67 @@ class DashboardManager:
                 "panels": panels,
                 "time": {"from": config.time_from, "to": config.time_to},
                 "refresh": config.refresh,
-                "schemaVersion": 30,
+                "schemaVersion": 36,
                 "editable": True
             },
             "overwrite": True,
-            "message": f"Dashboard atualizado em {datetime.now().isoformat()}"
+            "message": f"Dashboard criado em {datetime.now().isoformat()}"
         }
         
         response = self.api.post("/dashboards/db", json=payload)
-        logger.info(f"Dashboard '{config.title}' criado/atualizado")
+        logger.info(f"Dashboard '{config.title}' criado")
         return response.json()
 
 def execute():
-    """Função principal"""
-    logger.info("Iniciando configuração do Dashboard...")
+    """Função principal SIMPLES"""
+    logger.info("🚀 Iniciando configuração...")
     
-    # Gera token
-    token_manager = GrafanaTokenManager()
-    api_key = token_manager.execute_workflow()
-    
-    # Conecta ao Grafana
-    api = GrafanaAPI(Config_grafana.URL, api_key)
-    manager = DashboardManager(api)
-    
-    # Aguarda datasource provisionado estar disponível
-    ds_uid = manager.wait_for_provisioned_datasource("postgres-porto-uid")
-    
-    # Cria painéis e dashboard
-    panels = manager.create_panels(ds_uid)
-    config = DashboardConfig(
-        title="Dashboard Operacional do Porto", 
-        uid="Porto", 
-        time_from="now-7d", 
-        refresh="10s"
-    )
-    manager.create_dashboard(config, panels)
-    
-    print(f"\n{'='*60}")
-    print("CONFIGURAÇÃO CONCLUÍDA")
-    print(f"Dashboard: {config.title}")
-    print(f"URL: {Config_grafana.URL}/d/{config.uid}")
-    print(f"{'='*60}\n")
-    
-    return 0
+    try:
+        # Gera token
+        token_manager = GrafanaTokenManager()
+        api_key = token_manager.execute_workflow()
+        
+        # Conecta ao Grafana
+        api = GrafanaAPI(Config_grafana.URL, api_key)
+        manager = DashboardManager(api)
+        
+        # Cria datasource
+        logger.info("🔌 Criando datasource...")
+        ds_uid = manager.create_datasource("postgres-porto-uid")
+        #-----------------------------
+        
+        #-----------------------------
+        
+        # Cria dashboard
+        logger.info("📊 Criando dashboard...")
+        panels = manager.create_panels(ds_uid)
+        config = DashboardConfig(
+            title="Dashboard Operacional do Porto", 
+            uid="Porto", 
+            time_from="now-7d", 
+            refresh="30s"
+        )
+        
+        result = manager.create_dashboard(config, panels)
+        
+        logger.info(f"\n{'='*60}")
+        logger.info("🎉 CONFIGURAÇÃO CONCLUÍDA!")
+        logger.info(f"📊 Dashboard: {Config_grafana.URL}/d/Porto")
+        logger.info("💡 Os dados devem aparecer automaticamente")
+        logger.info(f"{'='*60}\n")
+        
+        return 0
+        
+    except Exception as e:
+        logger.error(f"💥 Erro: {e}")
+        return 1
 
 if __name__ == "__main__":
-    execute()
-    simulator = PortDataSimulator()
-    simulator.run_simulation()
+    exit_code = execute()
+    if exit_code == 0:
+        logger.info("🎯 Iniciando simulação de dados...")
+        simulator = PortDataSimulator()
+        simulator.run_simulation()
+    else:
+        logger.error("❌ Configuração falhou")
+        sys.exit(exit_code)

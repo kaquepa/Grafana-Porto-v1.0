@@ -264,6 +264,7 @@ class DashboardManager:
             """,
             
             
+            
             "Navios atendidos": """ 
                 SELECT COUNT(*)  as " " -- total_vessels
                 FROM operations 

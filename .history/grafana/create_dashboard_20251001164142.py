@@ -241,28 +241,7 @@ class DashboardManager:
             # Títulos EXATOS dos painéis criados
             
 
-            "Eficiência Operacional": """
-                 SELECT
-                    DATE_TRUNC('minute', start_time) + 
-                    INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3) as time,
-                    'Eficiência' as metric,
-                    ROUND(
-                        AVG(
-                            CASE 
-                                WHEN planned_duration > 0 THEN 
-                                    LEAST(100.0, (planned_duration::float / NULLIF(actual_duration, 0)) * 100)
-                                ELSE NULL 
-                            END
-                        )::numeric, 1
-                    ) as value
-                FROM operations
-                WHERE start_time >= $__timeFrom() 
-                AND start_time <= $__timeTo()
-                AND status = 'completed'
-                GROUP BY DATE_TRUNC('minute', start_time) + 
-                        INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3)
             """,
-            
             
             "Navios atendidos": """ 
                 SELECT COUNT(*)  as " " -- total_vessels

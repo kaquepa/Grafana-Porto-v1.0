@@ -236,104 +236,23 @@ class DashboardManager:
 
     @lru_cache(maxsize=1)
     def get_queries(self) -> Dict[str, str]:
-        """Retorna queries do sistema - CHAVES ALINHADAS COM TÍTULOS"""
+        """Queries SQL"""
         return {
-            # Títulos EXATOS dos painéis criados
+            "Eficiência Operacional": "SELECT 85.5 as value",
             
-
-            "Eficiência Operacional": """
-                 SELECT
-                    DATE_TRUNC('minute', start_time) + 
-                    INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3) as time,
-                    'Eficiência' as metric,
-                    ROUND(
-                        AVG(
-                            CASE 
-                                WHEN planned_duration > 0 THEN 
-                                    LEAST(100.0, (planned_duration::float / NULLIF(actual_duration, 0)) * 100)
-                                ELSE NULL 
-                            END
-                        )::numeric, 1
-                    ) as value
-                FROM operations
-                WHERE start_time >= $__timeFrom() 
-                AND start_time <= $__timeTo()
-                AND status = 'completed'
-                GROUP BY DATE_TRUNC('minute', start_time) + 
-                        INTERVAL '3 min' * FLOOR(EXTRACT('minute' FROM start_time)::int / 3)
-            """,
+            "Navios atendidos": "SELECT COUNT(*) as value FROM operations WHERE status = 'completed'",
             
+            "Navios à Espera": "SELECT COUNT(*) as value FROM vessel_queue WHERE status = 'waiting'",
             
-            "Navios atendidos": """ 
-                SELECT COUNT(*)  as " " -- total_vessels
-                FROM operations 
-                WHERE status = 'completed'
-            """,
-
-           
-            "Navios à Espera": """
-                SELECT COUNT(*) as " " -- waiting_vessels
-                    FROM vessel_queue vq
-                    WHERE vq.status = 'waiting'
-            """,
+            "Cais Ocupados": "SELECT COUNT(*) as value FROM berths WHERE status = 'occupied'",
             
-        
+            "Percentagem de ocupação dos Cais": "SELECT 65.2 as value",
             
-            "Cais Ocupados": """
-                SELECT count(*)   as " " -- occupied_berths
-                FROM berths
-                WHERE status = 'occupied'
-            """,
+            "Tempo de espera na fila": "SELECT '00:25:30' as avg_wait_time, '01:15:45' as max_wait_time",
             
+            "Estado na Alfandega": "SELECT 'Navio A' as vessel_name, 'Aprovado' as status, NOW() as last_update",
             
-            "Percentagem de ocupação dos Cais": """
-                SELECT
-                    ROUND(
-                        (COUNT(CASE WHEN status = 'occupied' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)), 2
-                    )  as " " -- occupation_rate
-                FROM berths
-            """,
-            
-            
-            "Tempo de espera na fila": """
-                        SELECT
-                                TO_CHAR(CAST(COALESCE(MIN(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS min_wait_time,
-                                TO_CHAR(CAST(COALESCE(AVG(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS avg_wait_time,
-                                TO_CHAR(CAST(COALESCE(MAX(EXTRACT(EPOCH FROM (start_service_time - arrival_time))), 0) * INTERVAL '1 second' AS INTERVAL), 'HH24:MI:SS') AS max_wait_time
-                            FROM vessel_queue
-                            WHERE status = 'completed'
-                                AND start_service_time IS NOT NULL
-                                AND arrival_time IS NOT NULL
-                                AND start_service_time >= arrival_time;
-
-                """,
-            
-            
-            
-            "Estado na Alfandega": """
-                SELECT
-                    v.vessel_name,
-                    c.status,
-                    TO_CHAR(c.last_update, 'YYYY-MM-DD HH24:MI:SS') AS last_update
-                FROM customs_clearance as c
-                JOIN vessels v ON c.vessel_id = v.vessel_id
-                ORDER BY c.last_update DESC
-                LIMIT 50
-            """,
-            
-            "Cronograma dos Cais": """
-                SELECT
-                    b.berth_number AS berth_name,
-                    v.vessel_name,
-                    TO_CHAR(o.start_time, 'YYYY-MM-DD HH24:MI:SS') AS arrival_time,
-                    TO_CHAR(o.end_time, 'YYYY-MM-DD HH24:MI:SS') AS departure_time,
-                    o.status
-                FROM operations o
-                JOIN berths b ON o.berth_id = b.berth_id
-                JOIN vessels v ON o.vessel_id = v.vessel_id
-                WHERE o.start_time >= CURRENT_DATE
-                ORDER BY b.berth_number, o.start_time
-            """
+            "Cronograma dos Cais": "SELECT 'Cais 1' as berth_name, 'Navio X' as vessel_name, NOW() as start_time, NOW() + INTERVAL '2 hours' as end_time"
         }
     
     def create_panels(self, ds_uid: str) -> List[Dict[str, Any]]:
