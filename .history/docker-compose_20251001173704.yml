@@ -102,7 +102,7 @@ services:
     container_name: frontend
     env_file:
       - .env
-    platform:  linux/arm64 #,linux/arm64, amd64
+    #platform:  linux/arm64 #,linux/arm64, amd64
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_database:5432/${POSTGRES_DB}"
       GRAFANA_URL: "http://grafana_dashboard:3000"
@@ -135,7 +135,7 @@ services:
     container_name : grafana-token-creator
     env_file:
       - .env
-    platform:  linux/arm64
+    #platform:  linux/arm64
     depends_on:
       grafana_dashboard:
         condition: service_healthy

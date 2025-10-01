@@ -135,7 +135,7 @@ services:
     container_name : grafana-token-creator
     env_file:
       - .env
-    platform:  linux/arm64
+    #platform:  linux/arm64
     depends_on:
       grafana_dashboard:
         condition: service_healthy
