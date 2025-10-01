@@ -1,0 +1,162 @@
+ 
+services:
+  postgres_database:
+    container_name: postgres_database
+    build:
+      context: .
+      dockerfile: postgres/Dockerfile
+    image: postgres_database
+    env_file:
+      - .env
+    platform:  linux/arm64
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    ports:
+      - "${POSTGRES_PORT}:5432"
+      
+
+  grafana_dashboard:
+    build:
+      context: .
+      dockerfile: grafana/dashboards/Dockerfile
+    image: grafana_dashboard
+    env_file:
+      - .env
+    #platform:  linux/arm64
+    container_name: grafana_dashboard
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    depends_on:
+      postgres_database:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GF_SECURITY_ADMIN_USER}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GF_SECURITY_ADMIN_PASSWORD}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_AUTH_BASIC_ENABLED: "true"
+      GF_USERS_DEFAULT_THEME: "dark"
+      GF_SERVER_ROOT_URL: "http://localhost:3000"
+      GF_DATABASE_TYPE: "${GF_DATABASE_TYPE}"
+      GF_DATABASE_HOST: "postgres_database:5432"
+      GF_DATABASE_NAME: "${POSTGRES_DB}"
+      GF_DATABASE_USER: "${POSTGRES_USER}"
+      GF_DATABASE_PASSWORD: "${POSTGRES_PASSWORD}"
+
+
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false" 
+      GF_CHECK_FOR_UPDATES: "false" 
+      GRAFANA_SA_NAME: "default_sa" 
+      GRAFANA_TOKEN_NAME: "default_token" 
+      GF_SERVER_HTTP_PORT: 3000 
+      GF_SERVER_DOMAIN: localhost 
+      #GRAFANA_PUBLIC_TOKEN: "36caa442de9549bcb5dfc50a34e7742e" 
+      GRAFANA_URL: http://grafana_dashboard:3000 
+      GF_SECURITY_ALLOW_EMBEDDING: true 
+  
+      GF_AUTH_ANONYMOUS_ORG_NAME: "Main Org." 
+      GF_AUTH_ANONYMOUS_ROLE: "Viewer" 
+      GF_FEATURE_TOGGLES_ENABLE: "publicDashboards" 
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+  
+      GF_DATABASE_SSL_MODE: "disable" 
+      GF_LOG_LEVEL: error 
+      GF_LOG_MODE: console 
+   
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      #- ./grafana/dashboards:/var/lib/grafana/dashboards
+      #- ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      #- ./grafana/provisioning/plugins:/etc/grafana/provisioning/plugins
+      
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    networks:
+      - network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: frontend
+    container_name: frontend
+    env_file:
+      - .env
+    #platform:  linux/arm64 #,linux/arm64, amd64
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres_database:5432/${POSTGRES_DB}"
+      GRAFANA_URL: "http://grafana_dashboard:3000"
+    depends_on:
+      postgres_database:
+        condition: service_healthy
+      grafana_dashboard:
+        condition: service_healthy
+    networks:
+      - network
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      #- ./grafana/grafana_api_key.txt:/app/grafana/grafana_api_key.txt:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    ports:
+      - "${FRONTEND_PORT}:8001"
+     
+
+  grafana-token-creator:
+    build:
+      context: .
+      dockerfile: grafana/Dockerfile
+    image: grafana-token-creator
+    container_name : grafana-token-creator
+    env_file:
+      - .env
+    #platform:  linux/arm64
+    depends_on:
+      grafana_dashboard:
+        condition: service_healthy
+    networks:
+      - network
+    restart: "no"
+    environment:
+      PYTHONPATH: /app    
+      SIMULATION_MODE: 4
+      GRAFANA_URL: "http://grafana_dashboard:3000"
+
+volumes:
+  postgres_data:
+    driver: local
+  grafana_data:
+    driver: local
+    name: grafana_grafana_data_new
+
+networks:
+  network:
+    driver: bridge
+
+
